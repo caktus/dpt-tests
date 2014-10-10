@@ -89,6 +89,8 @@ def bootstrap():
         shutil.copyfile(os.path.join('conf', 'pillar', 'secrets.ex'),
                         os.path.join('conf', 'pillar', 'production', 'secrets.sls'))
         check_call(['git', 'init'])
+        check_call(['git', 'config', 'user.email', 'dpt-test@example.com'])
+        check_call(['git', 'config', 'user.name', 'DPT Tester'])
         check_call(['git', 'add', '*', '.*'])
         check_call(['git', 'commit', '-m', 'initial commit'])
         check_call(['git', 'remote', 'add', 'origin',
@@ -110,6 +112,7 @@ def bootstrap():
             if not deploy_success:
                 output = fab(['staging', 'deploy'])
                 deploy_success = 'Failed to authenticate' not in output
+                print output
             time.sleep(sleep_time)
             try:
                 r = requests.get('https://{}/admin/'.format(serv_name), verify=False)
