@@ -1,0 +1,6 @@
+fabulaws==0.2.9
+Fabric==1.10.0
+PyGithub==1.25.0
+requests==2.3.0
+boto==2.31.1
+Django==1.7
