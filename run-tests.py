@@ -8,7 +8,7 @@ import requests
 
 from contextlib import contextmanager
 from github import Github
-from subprocess import call, check_call, check_output
+from subprocess import call, check_call, Popen, PIPE
 from fabulaws.ubuntu.instances.base import UbuntuInstance
 
 for l in ['fabulaws', 'fabric']:
@@ -18,6 +18,17 @@ for l in ['fabulaws', 'fabric']:
 
 github_user = os.environ['GITHUB_USER']
 github_password = os.environ['GITHUB_PASSWORD']
+
+
+def check_output_(cmd):
+    output = ''
+    proc = Popen(cmd, stdout=PIPE)
+    while proc.poll() is None:
+        line = proc.stdout.readline()
+        if line:
+            print line.strip()
+            output += line
+    return output
 
 
 @contextmanager
@@ -62,7 +73,7 @@ def bootstrap():
     venv_path = os.path.abspath(venv_name)
     server = TestServer('staging', name)
     serv_name = server.instance.public_dns_name
-    venv = lambda cmd, args: check_output(['{0}/bin/{1}'.format(venv_path, cmd)] + args)
+    venv = lambda cmd, args: check_output_(['{0}/bin/{1}'.format(venv_path, cmd)] + args)
     fab = lambda args: venv('fab', ['-u', server.user, '-i', server.key_file.name,
                                     '--disable-known-hosts'] + args)
     try:
@@ -113,7 +124,6 @@ def bootstrap():
             if not deploy_success:
                 output = fab(['staging', 'deploy'])
                 deploy_success = 'Failed to authenticate' not in output
-                print output
             time.sleep(sleep_time)
             try:
                 r = requests.get('https://{}/admin/'.format(serv_name), verify=False)
